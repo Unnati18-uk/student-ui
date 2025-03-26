@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clonefb
+  labels:
+    app: clonefb
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: clonefb
+  template:
+    metadata:
+      labels:
+        app: clonefb
+    spec:
+      containers:
+      - name: clonefb
+        image: 474668382045.dkr.ecr.us-east-2.amazonaws.com/myrepo:tomcat
+        ports:
+        - containerPort: 8080
