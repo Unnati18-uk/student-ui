@@ -1,0 +1,50 @@
+pipeline{
+    agent any
+    stages{
+        stage('PULL'){
+            steps{
+                git 'https://github.com/Unnati18-uk/student-ui.git'
+                //pulling repo
+            }
+        }
+        stage('BUILD'){
+            steps{
+                sh '/opt/maven/bin/mvn clean package'
+                //building an artifact
+            }
+        }
+        stage('TEST'){
+            steps{
+                sh '''/opt/maven/bin/mvn sonar:sonar \\
+  -Dsonar.projectKey=student-ui \\
+  -Dsonar.host.url=http://3.144.241.132:9000 \\
+  -Dsonar.login=2a2e1d2988afb5133b564fb81b281951e5a0c991'''
+  //testing code
+            }
+        }
+        
+        stage('TAG & PUSH'){
+            steps{
+                sh 'aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 474668382045.dkr.ecr.us-east-2.amazonaws.com'
+                 sh ' docker build -t main -f Dockerfile .'
+                sh 'docker tag main 474668382045.dkr.ecr.us-east-2.amazonaws.com/myrepo:main'
+                sh 'docker push 474668382045.dkr.ecr.us-east-2.amazonaws.com/myrepo:main'
+            }
+        }
+        stage('DEPLOY'){
+            steps{
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f service.yaml'
+                sh 'kubectl set image deployment/clonefb clonefb=474668382045.dkr.ecr.us-east-2.amazonaws.com/myrepo:main'
+
+            }
+        }
+    }
+}
+
+===============================================================================================================================================
+first setup = jenkins , sonar , tomcat
+install plugins related to k88 ecr docker
+create cluster
+install kubectl
+then configure pipeline
